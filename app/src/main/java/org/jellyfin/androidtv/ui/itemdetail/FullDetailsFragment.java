@@ -987,6 +987,14 @@ public class FullDetailsFragment extends Fragment implements RecordingIndicatorV
 
                 mDetailsOverviewRow.addAction(playButton);
 
+                final TextUnderButton chosePlayButton = TextUnderButton.create(requireContext(), R.drawable.ic_play, buttonSize, 2, getString(R.string.play_with), new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        FullDetailsFragmentHelperKt.showPlayWithMenu(FullDetailsFragment.this, view, false);
+                    }
+                });
+                mDetailsOverviewRow.addAction(chosePlayButton);
+
                 if (resumeButtonVisible) {
                     mResumeButton.requestFocus();
                 } else {
