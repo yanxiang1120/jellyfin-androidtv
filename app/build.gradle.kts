@@ -21,6 +21,8 @@ android {
 		versionName = project.getVersionName()
 		versionCode = getVersionCode(versionName!!)
 		setProperty("archivesBaseName", "jellyfin-androidtv-v$versionName")
+		println("versionName: $versionName")
+		println("versionCode: $versionCode")
 	}
 
 	buildFeatures {
