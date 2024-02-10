@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import org.jellyfin.playback.core.PlayerState
 import org.jellyfin.playback.core.backend.BackendService
 import org.jellyfin.playback.core.backend.PlayerBackendEventListener
-import org.jellyfin.playback.core.mediastream.MediaStream
+import org.jellyfin.playback.core.mediastream.PlayableMediaStream
 import org.jellyfin.playback.core.model.PlayState
 import org.jellyfin.playback.core.model.PlaybackOrder
 import org.jellyfin.playback.core.model.RepeatMode
@@ -80,7 +80,7 @@ class DefaultPlayerQueueState(
 			override fun onPlayStateChange(state: PlayState) = Unit
 			override fun onVideoSizeChange(width: Int, height: Int) = Unit
 
-			override fun onMediaStreamEnd(mediaStream: MediaStream) {
+			override fun onMediaStreamEnd(mediaStream: PlayableMediaStream) {
 				// TODO: Find position based on $mediaStream instead
 				// TODO: This doesn't work as expected
 				coroutineScope.launch { next(usePlaybackOrder = true, useRepeatMode = true) }
@@ -91,18 +91,14 @@ class DefaultPlayerQueueState(
 	override fun replaceQueue(queue: Queue) {
 		Timber.d("Queue changed, setting index to 0")
 
-		_current.value = queue
-		orderIndexProvider.reset()
-		if (orderIndexProvider != defaultOrderIndexProvider) defaultOrderIndexProvider.reset()
-
-		currentQueueIndicesPlayed.clear()
-
 		coroutineScope.launch {
-			when (state.playbackOrder.value) {
-				PlaybackOrder.DEFAULT -> setIndex(0)
-				PlaybackOrder.RANDOM,
-				PlaybackOrder.SHUFFLE -> setIndex((0 until queue.size).random())
-			}
+			_current.value = queue
+			orderIndexProvider.reset()
+			if (orderIndexProvider != defaultOrderIndexProvider) defaultOrderIndexProvider.reset()
+
+			currentQueueIndicesPlayed.clear()
+
+			setIndex(0)
 		}
 	}
 

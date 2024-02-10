@@ -29,9 +29,12 @@ dependencies {
 	implementation(libs.kotlinx.coroutines)
 	implementation(libs.kotlinx.coroutines.guava)
 
+	// AndroidX
+	implementation(libs.androidx.core)
+
 	// ExoPlayer
-	implementation(libs.exoplayer)
-	implementation(libs.jellyfin.exoplayer.ffmpegextension)
+	implementation(libs.androidx.media3.exoplayer)
+	implementation(libs.jellyfin.androidx.media3.ffmpeg.decoder)
 
 	// Logging
 	implementation(libs.timber)

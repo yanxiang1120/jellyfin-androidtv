@@ -276,7 +276,7 @@
     <string name="lbl_audio_track">Seleccione pista de audio</string>
     <string name="lbl_pause">Pausa</string>
     <string name="watch_count_overflow">99+</string>
-    <string name="lbl_playback_control_ends">Termina a las %1$s</string>
+    <string name="lbl_playback_control_ends">Termina %1$shs</string>
     <string name="lbl_sign_in">Por favor, inicie sesión</string>
     <string name="image_type_banner">Banner</string>
     <string name="image_type_thumbnail">Miniatura</string>
@@ -316,7 +316,6 @@
     <string name="auto_sign_in">Inicio de sesión automático</string>
     <string name="lbl_use_series_thumbnails_description">Usar miniaturas de series al mostrar episodios</string>
     <string name="lbl_use_series_thumbnails">Preferir miniaturas de series</string>
-    <string name="lbl_episode_marks">Solamente en episodios</string>
     <string name="lbl_hide_unwatched_count">Ocultar contador de contenido sin ver</string>
     <string name="pref_watched_indicator">Mostrar indicadores de contenido visto</string>
     <string name="login_help_description">Jellyfin requiere de un servidor al cual conectarse. Visita nuestra documentación en docs.jellyfin.org o escanea el código QR para comenzar a usar Jellyfin.</string>

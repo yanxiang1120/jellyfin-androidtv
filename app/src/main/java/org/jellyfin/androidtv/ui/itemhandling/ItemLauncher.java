@@ -5,6 +5,7 @@ import android.content.Context;
 import androidx.annotation.Nullable;
 
 import org.jellyfin.androidtv.constant.LiveTvOption;
+import org.jellyfin.androidtv.constant.QueryType;
 import org.jellyfin.androidtv.data.model.ChapterItemInfo;
 import org.jellyfin.androidtv.preference.LibraryPreferences;
 import org.jellyfin.androidtv.preference.PreferencesRepository;
@@ -28,6 +29,7 @@ import org.jellyfin.sdk.model.serializer.UUIDSerializerKt;
 import org.koin.java.KoinJavaComponent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import timber.log.Timber;
@@ -106,6 +108,8 @@ public class ItemLauncher {
                         } else if (mediaManager.hasAudioQueueItems() && rowItem instanceof AudioQueueItem && pos < mediaManager.getCurrentAudioQueueSize()) {
                             Timber.d("playing audio queue item");
                             mediaManager.playFrom(pos);
+                        } else if (adapter.getQueryType() == QueryType.Search) {
+                            mediaManager.playNow(context, Arrays.asList(rowItem.getBaseItem()), 0, false);
                         } else {
                             Timber.d("playing audio item");
                             List<BaseItemDto> audioItemsAsList = new ArrayList<>();

@@ -24,6 +24,8 @@ import org.jellyfin.sdk.model.api.SeriesStatus;
 import org.koin.java.KoinJavaComponent;
 
 import java.text.NumberFormat;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -46,66 +48,66 @@ public class InfoLayoutHelper {
         }
     }
 
-    public static void addInfoRow(Context context, BaseItemDto item, int mediaSourceIndex, LinearLayout layout, boolean includeRuntime, boolean includeEndTime) {
-        layout.removeAllViews();
-        if (item.getId() != null) {
-            addInfoRow(context, item, mediaSourceIndex, layout, includeRuntime, includeEndTime, StreamHelper.getFirstAudioStream(item));
-        }else{
-            addProgramChannel(context, item, layout);
-        }
-    }
-
     public static void addInfoRow(Context context, BaseItemDto item, LinearLayout layout, boolean includeRuntime, boolean includeEndTime) {
         addInfoRow(context, item, 0, layout, includeRuntime, includeEndTime);
     }
 
-    public static void addInfoRow(Context context, BaseItemDto item, int mediaSourceIndex, LinearLayout layout, boolean includeRuntime, boolean includeEndTime, MediaStream audioStream) {
-        RatingType ratingType = KoinJavaComponent.<UserPreferences>get(UserPreferences.class).get(UserPreferences.Companion.getDefaultRatingType());
-        if (ratingType != RatingType.RATING_HIDDEN) {
-            addCriticInfo(context, item, layout);
-        }
-        switch (item.getType()) {
-            case EPISODE:
-                addSeasonEpisode(context, item, layout);
-                addDate(context, item, layout);
-                break;
-            case BOX_SET:
-                addBoxSetCounts(context, item, layout);
-                break;
-            case SERIES:
-                //addSeasonCount(context, item, layout);
-                addSeriesAirs(context, item, layout);
-                addDate(context, item, layout);
-                includeEndTime = false;
-                break;
-            case PROGRAM:
-                addProgramInfo(context, item, layout);
-                break;
-            case MUSIC_ARTIST:
-                Integer artistAlbums = item.getAlbumCount() != null ? item.getAlbumCount() : item.getChildCount();
-                addCount(context, artistAlbums, layout, artistAlbums != null && artistAlbums == 1 ? context.getResources().getString(R.string.lbl_album) : context.getResources().getString(R.string.lbl_albums));
-                return;
-            case MUSIC_ALBUM:
-                String artist = item.getAlbumArtist() != null ? item.getAlbumArtist() : item.getArtists() != null && item.getAlbumArtists().size() > 0 ? item.getArtists().get(0) : null;
-                if (artist != null) {
-                    addText(context, artist+" ", layout, 500);
-                }
-                addDate(context, item, layout);
-                Integer songCount = item.getSongCount() != null ? item.getSongCount() : item.getChildCount();
-                addCount(context, songCount, layout, songCount == 1 ? context.getResources().getString(R.string.lbl_song) : context.getResources().getString(R.string.lbl_songs));
-                return;
-            case PLAYLIST:
-                if (item.getChildCount() != null) addCount(context, item.getChildCount(), layout, item.getChildCount() == 1 ? context.getResources().getString(R.string.lbl_item) : context.getResources().getString(R.string.lbl_items));
-                if (item.getCumulativeRunTimeTicks() != null) addText(context, " ("+ TimeUtils.formatMillis(item.getCumulativeRunTimeTicks() / 10000)+")", layout, 300);
-                break;
-            default:
-                addDate(context, item, layout);
+    public static void addInfoRow(Context context, BaseItemDto item, int mediaSourceIndex, LinearLayout layout, boolean includeRuntime, boolean includeEndTime) {
+        layout.removeAllViews();
+        if (item.getId() != null) {
+            RatingType ratingType = KoinJavaComponent.<UserPreferences>get(UserPreferences.class).get(UserPreferences.Companion.getDefaultRatingType());
+            if (ratingType != RatingType.RATING_HIDDEN) {
+                addCriticInfo(context, item, layout);
+            }
+            switch (item.getType()) {
+                case EPISODE:
+                    addSeasonEpisode(context, item, layout);
+                    addDate(context, item, layout);
+                    break;
+                case BOX_SET:
+                    addBoxSetCounts(context, item, layout);
+                    break;
+                case SERIES:
+                    //addSeasonCount(context, item, layout);
+                    addSeriesAirs(context, item, layout);
+                    addDate(context, item, layout);
+                    includeEndTime = false;
+                    break;
+                case PROGRAM:
+                    addProgramInfo(context, item, layout);
+                    break;
+                case MUSIC_ARTIST:
+                    Integer artistAlbums = item.getAlbumCount() != null ? item.getAlbumCount() : item.getChildCount();
+                    addCount(context, artistAlbums, layout, artistAlbums != null && artistAlbums == 1 ? context.getResources().getString(R.string.lbl_album) : context.getResources().getString(R.string.lbl_albums));
+                    return;
+                case MUSIC_ALBUM:
+                    String artist = item.getAlbumArtist() != null ? item.getAlbumArtist() : item.getArtists() != null && item.getAlbumArtists().size() > 0 ? item.getArtists().get(0) : null;
+                    if (artist != null) {
+                        addText(context, artist + " ", layout, 500);
+                    }
+                    addDate(context, item, layout);
+                    Integer songCount = item.getSongCount() != null ? item.getSongCount() : item.getChildCount();
+                    addCount(context, songCount, layout, songCount == 1 ? context.getResources().getString(R.string.lbl_song) : context.getResources().getString(R.string.lbl_songs));
+                    return;
+                case PLAYLIST:
+                    if (item.getChildCount() != null)
+                        addCount(context, item.getChildCount(), layout, item.getChildCount() == 1 ? context.getResources().getString(R.string.lbl_item) : context.getResources().getString(R.string.lbl_items));
+                    if (item.getCumulativeRunTimeTicks() != null)
+                        addText(context, " (" + TimeUtils.formatMillis(item.getCumulativeRunTimeTicks() / 10000) + ")", layout, 300);
+                    break;
+                default:
+                    addDate(context, item, layout);
 
+            }
+            if (includeRuntime) addRuntime(context, item, layout, includeEndTime);
+            addSeriesStatus(context, item, layout);
+            addRatingAndRes(context, item, mediaSourceIndex, layout);
+            addMediaDetails(context, item, mediaSourceIndex, layout);
+
+        } else {
+            addProgramChannel(context, item, layout);
         }
-        if (includeRuntime) addRuntime(context, item, layout, includeEndTime);
-        addSeriesStatus(context, item, layout);
-        addRatingAndRes(context, item, mediaSourceIndex, layout);
-        addMediaDetails(context, audioStream, layout);
+
     }
 
     private static void addText(Context context, String text, LinearLayout layout, int maxWidth) {
@@ -123,7 +125,7 @@ public class InfoLayoutHelper {
         if (item.getMovieCount() != null && item.getMovieCount() > 0) {
             TextView amt = new TextView(context);
             amt.setTextSize(textSize);
-            amt.setText(item.getMovieCount().toString()+" "+context.getResources().getString(R.string.lbl_movies)+"  ");
+            amt.setText(item.getMovieCount().toString() + " " + context.getResources().getString(R.string.lbl_movies) + "  ");
             layout.addView(amt);
             hasSpecificCounts = true;
 
@@ -131,14 +133,14 @@ public class InfoLayoutHelper {
         if (item.getSeriesCount() != null && item.getSeriesCount() > 0) {
             TextView amt = new TextView(context);
             amt.setTextSize(textSize);
-            amt.setText(item.getSeriesCount().toString()+" "+context.getResources().getString(R.string.lbl_tv_series)+"  ");
+            amt.setText(item.getSeriesCount().toString() + " " + context.getResources().getString(R.string.lbl_tv_series) + "  ");
             layout.addView(amt);
             hasSpecificCounts = true;
         }
         if (!hasSpecificCounts && item.getChildCount() != null && item.getChildCount() > 0) {
             TextView amt = new TextView(context);
             amt.setTextSize(textSize);
-            amt.setText(item.getChildCount().toString()+" "+ context.getResources().getString(item.getChildCount() > 1 ? R.string.lbl_items : R.string.lbl_item) +"  ");
+            amt.setText(item.getChildCount().toString() + " " + context.getResources().getString(item.getChildCount() > 1 ? R.string.lbl_items : R.string.lbl_item) + "  ");
             layout.addView(amt);
 
         }
@@ -148,7 +150,7 @@ public class InfoLayoutHelper {
         if (count != null && count > 0) {
             TextView amt = new TextView(context);
             amt.setTextSize(textSize);
-            amt.setText(count.toString()+" "+ label +"  ");
+            amt.setText(count.toString() + " " + label + "  ");
             layout.addView(amt);
         }
     }
@@ -157,13 +159,13 @@ public class InfoLayoutHelper {
         if (item.getAirDays() != null && item.getAirDays().size() > 0) {
             TextView textView = new TextView(context);
             textView.setTextSize(textSize);
-            textView.setText(item.getAirDays().get(0) + " " + Utils.getSafeValue(item.getAirTime(), "") +  "  ");
+            textView.setText(item.getAirDays().get(0) + " " + Utils.getSafeValue(item.getAirTime(), "") + "  ");
             layout.addView(textView);
 
         }
     }
 
-    private static void addProgramChannel(Context context, BaseItemDto item, LinearLayout layout){
+    private static void addProgramChannel(Context context, BaseItemDto item, LinearLayout layout) {
         TextView name = new TextView(context);
         name.setTextSize(textSize);
         name.setText(BaseItemExtensionsKt.getProgramUnknownChannelName(item));
@@ -173,7 +175,7 @@ public class InfoLayoutHelper {
     private static void addProgramInfo(@NonNull Context context, BaseItemDto item, LinearLayout layout) {
         TextView name = new TextView(context);
         name.setTextSize(textSize);
-        name.setText(BaseItemExtensionsKt.getProgramSubText(item, context)+"  ");
+        name.setText(BaseItemExtensionsKt.getProgramSubText(item, context) + "  ");
         layout.addView(name);
 
         if (BaseItemExtensionsKt.isNew(item)) {
@@ -206,7 +208,7 @@ public class InfoLayoutHelper {
         }
         Long runtime = item.getRunTimeTicks();
         if (runtime != null && runtime > 0) {
-            long endTime = includeEndtime ? System.currentTimeMillis() + runtime / 10000 - (item.getUserData() != null && item.getUserData().getPlaybackPositionTicks() > 0 ? item.getUserData().getPlaybackPositionTicks()/10000 : 0) : 0;
+            long endTime = includeEndtime ? System.currentTimeMillis() + runtime / 10000 - (item.getUserData() != null && item.getUserData().getPlaybackPositionTicks() > 0 ? item.getUserData().getPlaybackPositionTicks() / 10000 : 0) : 0;
             String text = nf.format((int) Math.ceil((double) runtime / 600000000)) + context.getString(R.string.lbl_min) + (endTime > 0 ? " (" + context.getResources().getString(R.string.lbl_ends) + " " + android.text.format.DateFormat.getTimeFormat(context).format(new Date(endTime)) + ")  " : "  ");
             TextView time = new TextView(context);
             time.setTextSize(textSize);
@@ -218,9 +220,9 @@ public class InfoLayoutHelper {
     private static void addSeasonEpisode(Context context, BaseItemDto item, LinearLayout layout) {
         if (item.getIndexNumber() != null) {
             String text = (item.getParentIndexNumber() != null ? context.getString(R.string.lbl_season_number, item.getParentIndexNumber()) : "")
-                + (item.getIndexNumberEnd() != null && item.getIndexNumber() != null ? " " + context.getString(R.string.lbl_episode_range, item.getIndexNumber(), item.getIndexNumberEnd())
-                : item.getIndexNumber() != null ? " " + context.getString(R.string.lbl_episode_number, item.getIndexNumber()) : "")
-                + "  ";
+                    + (item.getIndexNumberEnd() != null && item.getIndexNumber() != null ? " " + context.getString(R.string.lbl_episode_range, item.getIndexNumber(), item.getIndexNumberEnd())
+                    : item.getIndexNumber() != null ? " " + context.getString(R.string.lbl_episode_number, item.getIndexNumber()) : "")
+                    + "  ";
             TextView time = new TextView(context);
             time.setTextSize(textSize);
             time.setText(text);
@@ -229,8 +231,8 @@ public class InfoLayoutHelper {
     }
 
     private static void addCriticInfo(Context context, BaseItemDto item, LinearLayout layout) {
-        int imagesize = Utils.convertDpToPixel(context,textSize+2);
-        LinearLayout.LayoutParams imageParams = new LinearLayout.LayoutParams(imagesize,imagesize);
+        int imagesize = Utils.convertDpToPixel(context, textSize + 2);
+        LinearLayout.LayoutParams imageParams = new LinearLayout.LayoutParams(imagesize, imagesize);
         imageParams.setMargins(0, 5, 10, 0);
         boolean hasSomething = false;
         if (item.getCommunityRating() != null) {
@@ -259,7 +261,7 @@ public class InfoLayoutHelper {
             layout.addView(tomato);
             TextView amt = new TextView(context);
             amt.setTextSize(textSize);
-            amt.setText(nfp.format(item.getCriticRating()/100) + " ");
+            amt.setText(nfp.format(item.getCriticRating() / 100) + " ");
             layout.addView(amt);
 
             hasSomething = true;
@@ -300,7 +302,7 @@ public class InfoLayoutHelper {
             case TV_CHANNEL:
                 if (item.getStartDate() != null && item.getEndDate() != null) {
                     date.setText(DateFormat.getTimeFormat(context).format(TimeUtils.getDate(item.getStartDate()))
-                            + "-"+ DateFormat.getTimeFormat(context).format(TimeUtils.getDate(item.getEndDate())));
+                            + "-" + DateFormat.getTimeFormat(context).format(TimeUtils.getDate(item.getEndDate())));
                     layout.addView(date);
                     addSpacer(context, layout, "    ");
                 }
@@ -315,7 +317,7 @@ public class InfoLayoutHelper {
                 break;
             default:
                 if (item.getPremiereDate() != null) {
-                    date.setText(DateFormat.getMediumDateFormat(context).format(TimeUtils.getDate(item.getPremiereDate())));
+                    date.setText(item.getPremiereDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)));
                     layout.addView(date);
                     addSpacer(context, layout, "  ");
                 } else if (item.getProductionYear() != null && item.getProductionYear() > 0) {
@@ -368,46 +370,56 @@ public class InfoLayoutHelper {
         if (item.getType() == BaseItemKind.SERIES && item.getStatus() != null) {
             boolean continuing = item.getStatus().equalsIgnoreCase(SeriesStatus.CONTINUING.getSerialName());
             String status = continuing ? context.getString(R.string.lbl__continuing) : context.getString(R.string.lbl_ended);
-            addBlockText(context, layout, status, textSize-4, Color.LTGRAY, continuing ? R.drawable.green_gradient : R.drawable.red_gradient);
+            addBlockText(context, layout, status, textSize - 4, Color.LTGRAY, continuing ? R.drawable.green_gradient : R.drawable.red_gradient);
             addSpacer(context, layout, "  ");
         }
     }
 
     private static void addVideoCodecDetails(Context context, LinearLayout layout, MediaStream stream) {
         if (stream != null) {
+            if (stream.getCodec() != null && stream.getCodec().trim().length() > 0) {
+                String codec = stream.getCodec().toUpperCase();
+                addBlockText(context, layout, codec);
+                addSpacer(context, layout, "  ");
+            }
             if (stream.getVideoDoViTitle() != null && stream.getVideoDoViTitle().trim().length() > 0) {
                 addBlockText(context, layout, "VISION");
                 addSpacer(context, layout, "  ");
             } else if (stream.getVideoRangeType() != null && !stream.getVideoRangeType().equals("SDR")) {
                 addBlockText(context, layout, stream.getVideoRangeType().toUpperCase());
                 addSpacer(context, layout, "  ");
-            } else if (stream.getCodec() != null && stream.getCodec().trim().length() > 0) {
-                String codec = stream.getCodec().toUpperCase();
-                addBlockText(context, layout, codec);
-                addSpacer(context, layout, "  ");
             }
         }
     }
 
-    private static void addMediaDetails(Context context, MediaStream stream, LinearLayout layout) {
+    private static void addMediaDetails(Context context, BaseItemDto item, int mediaSourceIndex, LinearLayout layout) {
 
-        if (stream != null) {
-            if (stream.getProfile() != null && stream.getProfile().contains("Dolby Atmos")) {
+        MediaStream audioStream = StreamHelper.getFirstAudioStream(item, mediaSourceIndex);
+
+        if (audioStream != null) {
+            if (audioStream.getProfile() != null && audioStream.getProfile().contains("Dolby Atmos")) {
                 addBlockText(context, layout, "ATMOS");
                 addSpacer(context, layout, " ");
-            } else if (stream.getProfile() != null && stream.getProfile().contains("DTS:X")) {
+            } else if (audioStream.getProfile() != null && audioStream.getProfile().contains("DTS:X")) {
                 addBlockText(context, layout, "DTS:X");
                 addSpacer(context, layout, " ");
             } else {
                 String codec = null;
-                if (stream.getProfile() != null && stream.getProfile().contains("DTS-HD")) {
+                if (audioStream.getProfile() != null && audioStream.getProfile().contains("DTS-HD")) {
                     codec = "DTS-HD";
-                } else if (stream.getCodec() != null && stream.getCodec().trim().length() > 0) {
-                    switch (stream.getCodec().toLowerCase()) {
-                        case "dca": codec = "DTS"; break;
-                        case "eac3": codec = "DD+"; break;
-                        case "ac3": codec = "DD"; break;
-                        default: codec = stream.getCodec().toUpperCase();
+                } else if (audioStream.getCodec() != null & audioStream.getCodec().trim().length() > 0) {
+                    switch (audioStream.getCodec().toLowerCase()) {
+                        case "dca":
+                            codec = "DTS";
+                            break;
+                        case "eac3":
+                            codec = "DD+";
+                            break;
+                        case "ac3":
+                            codec = "DD";
+                            break;
+                        default:
+                            codec = audioStream.getCodec().toUpperCase();
                     }
                 }
                 if (codec != null) {
@@ -415,15 +427,15 @@ public class InfoLayoutHelper {
                     addSpacer(context, layout, " ");
                 }
             }
-            if (stream.getChannelLayout() != null && stream.getChannelLayout().trim().length() > 0) {
-                addBlockText(context, layout, stream.getChannelLayout().toUpperCase());
+            if (audioStream.getChannelLayout() != null && audioStream.getChannelLayout().trim().length() > 0) {
+                addBlockText(context, layout, audioStream.getChannelLayout().toUpperCase());
                 addSpacer(context, layout, "  ");
             }
         }
     }
 
     public static void addBlockText(Context context, LinearLayout layout, String text) {
-        addBlockText(context, layout, text, textSize-4);
+        addBlockText(context, layout, text, textSize - 4);
     }
 
     public static void addBlockText(Context context, LinearLayout layout, String text, int size) {
@@ -437,7 +449,7 @@ public class InfoLayoutHelper {
         view.setText(" " + text + " ");
         view.setBackgroundResource(backgroundRes);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        params.setMargins(0,Utils.convertDpToPixel(context, -2),0,0);
+        params.setMargins(0, Utils.convertDpToPixel(context, -2), 0, 0);
         view.setLayoutParams(params);
         layout.addView(view);
     }

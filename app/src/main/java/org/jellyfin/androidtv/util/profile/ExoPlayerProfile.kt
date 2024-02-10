@@ -7,6 +7,7 @@ import org.jellyfin.androidtv.util.Utils
 import org.jellyfin.androidtv.util.profile.ProfileHelper.audioDirectPlayProfile
 import org.jellyfin.androidtv.util.profile.ProfileHelper.deviceAV1CodecProfile
 import org.jellyfin.androidtv.util.profile.ProfileHelper.deviceHevcCodecProfile
+import org.jellyfin.androidtv.util.profile.ProfileHelper.deviceHevcLevelCodecProfiles
 import org.jellyfin.androidtv.util.profile.ProfileHelper.h264VideoLevelProfileCondition
 import org.jellyfin.androidtv.util.profile.ProfileHelper.h264VideoProfileCondition
 import org.jellyfin.androidtv.util.profile.ProfileHelper.max1080pProfileConditions
@@ -52,6 +53,8 @@ class ExoPlayerProfile(
 		add(Codec.Audio.TRUEHD)
 		add(Codec.Audio.PCM_ALAW)
 		add(Codec.Audio.PCM_MULAW)
+		add(Codec.Audio.OPUS)
+		add(Codec.Audio.FLAC)
 	}.toTypedArray()
 
 	private val allSupportedAudioCodecsWithoutFFmpegExperimental = allSupportedAudioCodecs
@@ -107,7 +110,9 @@ class ExoPlayerProfile(
 						Codec.Container.OGM,
 						Codec.Container.OGV,
 						Codec.Container.MP4,
-						Codec.Container.WEBM
+						Codec.Container.WEBM,
+						Codec.Container.TS,
+						Codec.Container.HLS
 					).joinToString(",")
 
 					videoCodec = arrayOf(
@@ -129,14 +134,12 @@ class ExoPlayerProfile(
 			// Audio direct play
 			add(audioDirectPlayProfile(allSupportedAudioCodecs + arrayOf(
 				Codec.Audio.MPA,
-				Codec.Audio.FLAC,
 				Codec.Audio.WAV,
 				Codec.Audio.WMA,
 				Codec.Audio.OGG,
 				Codec.Audio.OGA,
 				Codec.Audio.WEBMA,
 				Codec.Audio.APE,
-				Codec.Audio.OPUS,
 			)))
 			// Photo direct play
 			add(photoDirectPlayProfile)
@@ -191,8 +194,9 @@ class ExoPlayerProfile(
 					)
 				)
 			})
-			// HEVC profile
+			// HEVC profiles
 			add(deviceHevcCodecProfile)
+			addAll(deviceHevcLevelCodecProfiles)
 			// AV1 profile
 			add(deviceAV1CodecProfile)
 			// Limit video resolution support for older devices

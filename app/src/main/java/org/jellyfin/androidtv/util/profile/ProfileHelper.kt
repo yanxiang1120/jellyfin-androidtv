@@ -105,6 +105,56 @@ object ProfileHelper {
 		}
 	}
 
+	val deviceHevcLevelCodecProfiles by lazy {
+		buildList {
+			if (MediaTest.supportsHevc()) {
+				add(CodecProfile().apply {
+					type = CodecType.Video
+					codec = Codec.Video.HEVC
+
+					applyConditions = arrayOf(
+						ProfileCondition(
+							ProfileConditionType.Equals,
+							ProfileConditionValue.VideoProfile,
+							"Main"
+						)
+					)
+
+					conditions = arrayOf(
+						ProfileCondition(
+							ProfileConditionType.LessThanEqual,
+							ProfileConditionValue.VideoLevel,
+							MediaTest.getHevcMainLevel()
+						)
+					)
+				})
+
+				if (MediaTest.supportsHevcMain10()) {
+					add(CodecProfile().apply {
+						type = CodecType.Video
+						codec = Codec.Video.HEVC
+
+						applyConditions = arrayOf(
+							ProfileCondition(
+								ProfileConditionType.Equals,
+								ProfileConditionValue.VideoProfile,
+								"Main 10"
+							)
+						)
+
+						conditions = arrayOf(
+							ProfileCondition(
+								ProfileConditionType.LessThanEqual,
+								ProfileConditionValue.VideoLevel,
+								MediaTest.getHevcMain10Level()
+							)
+						)
+					})
+				}
+			}
+		}
+	}
+
 	val h264VideoLevelProfileCondition by lazy {
 		ProfileCondition(
 			ProfileConditionType.LessThanEqual,
@@ -112,6 +162,7 @@ object ProfileHelper {
 			when {
 				// https://developer.amazon.com/docs/fire-tv/device-specifications.html
 				DeviceUtils.isFireTvStick4k -> H264_LEVEL_5_2
+				DeviceUtils.isFireTv4k -> H264_LEVEL_5_2
 				DeviceUtils.isFireTv -> H264_LEVEL_4_1
 				DeviceUtils.isShieldTv -> H264_LEVEL_5_2
 				else -> H264_LEVEL_5_1

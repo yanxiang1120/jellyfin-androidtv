@@ -294,7 +294,6 @@
     <string name="watch_count_overflow">99+</string>
     <string name="lbl_use_series_thumbnails_description">Bruk serieminiatyrbilder når du viser episoder</string>
     <string name="lbl_use_series_thumbnails">Foretrekker serieminiatyrbilder</string>
-    <string name="lbl_episode_marks">Bare på episoder</string>
     <string name="lbl_hide_unwatched_count">Skjul ukjent antall</string>
     <string name="pref_watched_indicator">Vis overvåkede indikatorer</string>
     <string name="login_help_description">Jellyfin krever en tjener å koble seg til. Gå til dokumentasjonen vår på docs.jellyfin.org eller skann QR-koden for å komme i gang med Jellyfin.</string>
@@ -339,7 +338,7 @@
     <string name="lbl_special">Spesial</string>
     <string name="help">Hjelp</string>
     <string name="who_is_watching">Hvem ser på\?</string>
-    <string name="no_user_warning">Kunne ikke finne noen brukere!
+    <string name="no_user_warning">Vi kunne ikke finne noen brukere!
 \nLegg til ny bruker ved å trykke på \"Legg til bruker\" knappen.</string>
     <string name="add_user">Legg til bruker</string>
     <string name="welcome_content">Koble til serveren din for å starte.</string>
@@ -377,7 +376,6 @@
     <string name="lbl_latest_in">Nylig lagt til i %1$s</string>
     <string name="pref_screensaver">Skjermsparer</string>
     <string name="pref_libraries">Biblioteker</string>
-    <string name="pref_music_rewrite_enable_description">Bare deaktiver dette hvis du har problemer med musikkavspilling</string>
     <string name="home_section_latest_media">Nylig lagt til media</string>
     <string name="pref_subtitles_background_summary">Vis en svart bakgrunn bak undertekstene</string>
     <string name="color_black">Svart</string>
@@ -404,7 +402,6 @@
         <item quantity="one">%1$s minutt</item>
         <item quantity="other">%1$s minutter</item>
     </plurals>
-    <string name="pref_music_cat">Musikk</string>
     <plurals name="episodes">
         <item quantity="one">%1$s episode</item>
         <item quantity="other">%1$s episoder</item>
@@ -496,4 +493,24 @@
     <string name="login_connect_to">Kobler til %1$s</string>
     <string name="episode_name_special">spesiell</string>
     <string name="because_you_watched">Fordi du så %1$s</string>
+    <string name="lbl_community_rating">Samfunnsvurdering</string>
+    <string name="lbl_subtitle_stroke">Undertekststrekstørrelse</string>
+    <string name="lbl_start_end_on_schedule">Starter etter planen og slutter etter planen</string>
+    <string name="pref_browsing">Søking</string>
+    <string name="pref_refresh_rate_scale_on_tv">Skala på TV</string>
+    <string name="pref_crash_reports_enabled">Krasj raporter vil bli sent til din siste brukte server</string>
+    <string name="pref_crash_report_logs_enabled">Logger vil bli inkludert i krasj rapporter</string>
+    <string name="server_issue_ssl_handshake">SSL-håndtrykk mislyktes</string>
+    <string name="pref_crash_reports">Send krasj raport til server</string>
+    <string name="crash_report_toast">Oops! Noe gikk galt, en krasj rapport er sendt til din Jellyfin server.</string>
+    <string name="license_artifact">Gjenstand</string>
+    <string name="pref_crash_reports_disabled">Krasj rapporter vil ikke bli sendt</string>
+    <string name="pref_refresh_rate_scale_on_device">Scala på enhet</string>
+    <string name="pref_crash_report_logs_disabled">logger vil ikke bli inkudert i krasj rapporter</string>
+    <string name="license_repository">Depot</string>
+    <string name="channels">Kanaler</string>
+    <string name="photo_albums">Fotoalbum</string>
+    <string name="photos">Bilder</string>
+    <string name="disable_ui_mode_warning">Slå av enhetstype-advarsel</string>
+    <string name="pref_enable_media_management_description">Vis alternativ for å behandle media mens du utforsker</string>
 </resources>

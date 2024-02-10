@@ -5,9 +5,6 @@ plugins {
 	alias(libs.plugins.aboutlibraries)
 }
 
-// Apply workaround
-apply("baselineWorkaround.gradle")
-
 android {
 	namespace = "org.jellyfin.androidtv"
 	compileSdk = 34
@@ -88,7 +85,7 @@ aboutLibraries {
 }
 
 val versionTxt by tasks.registering {
-	val path = buildDir.resolve("version.txt")
+	val path = layout.buildDirectory.asFile.get().resolve("version.txt")
 
 	doLast {
 		val versionString = "v${android.defaultConfig.versionName}=${android.defaultConfig.versionCode}"
@@ -141,8 +138,10 @@ dependencies {
 	implementation(libs.bundles.koin)
 
 	// Media players
-	implementation(libs.exoplayer)
-	implementation(libs.jellyfin.exoplayer.ffmpegextension)
+	implementation(libs.androidx.media3.exoplayer)
+	implementation(libs.androidx.media3.exoplayer.hls)
+	implementation(libs.androidx.media3.ui)
+	implementation(libs.jellyfin.androidx.media3.ffmpeg.decoder)
 	implementation(libs.libvlc)
 
 	// Markdown
