@@ -1,175 +1,192 @@
 plugins {
-	id("com.android.application")
-	kotlin("android")
-	alias(libs.plugins.kotlin.serialization)
-	alias(libs.plugins.aboutlibraries)
+    id("com.android.application")
+    kotlin("android")
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.aboutlibraries)
 }
 
 android {
-	namespace = "org.jellyfin.androidtv"
-	compileSdk = 34
+    namespace = "org.jellyfin.androidtv"
+    compileSdk = 34
 
-	defaultConfig {
-		minSdk = 21
-		targetSdk = 33
+    defaultConfig {
+        minSdk = 21
+        targetSdk = 33
 
-		// Release version
-		applicationId = namespace
-		versionName = project.getVersionName()
-		versionCode = getVersionCode(versionName!!)
-		setProperty("archivesBaseName", "jellyfin-androidtv-v$versionName")
-		println("versionName: $versionName")
-		println("versionCode: $versionCode")
-	}
+        // Release version
+        applicationId = namespace
+        versionName = project.getVersionName()
+        versionCode = getVersionCode(versionName!!)
+        setProperty("archivesBaseName", "jellyfin-androidtv-v$versionName")
+        println("versionName: $versionName")
+        println("versionCode: $versionCode")
+    }
 
-	buildFeatures {
-		buildConfig = true
-		viewBinding = true
-		compose = true
-	}
+    buildFeatures {
+        buildConfig = true
+        viewBinding = true
+        compose = true
+    }
 
-	compileOptions {
-		isCoreLibraryDesugaringEnabled = true
-	}
+    compileOptions {
+        isCoreLibraryDesugaringEnabled = true
+    }
 
-	composeOptions {
-		kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
-	}
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
+    }
 
-	buildTypes {
-		val release by getting {
-			isMinifyEnabled = false
+    signingConfigs {
+        create("release") {
+            storeFile = file("${project.path}/jks/release.jks")
+            storePassword = "android"
+            keyAlias = "android"
+            keyPassword = "android"
+            enableV1Signing = true
+            enableV2Signing = true
+        }
+    }
 
-			// Set package names used in various XML files
-			resValue("string", "app_id", namespace!!)
-			resValue("string", "app_search_suggest_authority", "${namespace}.content")
-			resValue("string", "app_search_suggest_intent_data", "content://${namespace}.content/intent")
+    buildTypes {
+        val release by getting {
+            isMinifyEnabled = false
 
-			// Set flavored application name
-			resValue("string", "app_name", "@string/app_name_release")
+            // Set package names used in various XML files
+            resValue("string", "app_id", namespace!!)
+            resValue("string", "app_search_suggest_authority", "${namespace}.content")
+            resValue("string", "app_search_suggest_intent_data", "content://${namespace}.content/intent")
 
-			buildConfigField("boolean", "DEVELOPMENT", "false")
-		}
+            // Set flavored application name
+            resValue("string", "app_name", "@string/app_name_release")
 
-		val debug by getting {
-			// Use different application id to run release and debug at the same time
-			applicationIdSuffix = ".debug"
+            buildConfigField("boolean", "DEVELOPMENT", "false")
 
-			// Set package names used in various XML files
-			resValue("string", "app_id", namespace + applicationIdSuffix)
-			resValue("string", "app_search_suggest_authority", "${namespace + applicationIdSuffix}.content")
-			resValue("string", "app_search_suggest_intent_data", "content://${namespace + applicationIdSuffix}.content/intent")
+            signingConfig = signingConfigs.getByName("release")
+        }
 
-			// Set flavored application name
-			resValue("string", "app_name", "@string/app_name_debug")
+        val debug by getting {
+            // Use different application id to run release and debug at the same time
+//			applicationIdSuffix = ".debug"
 
-			buildConfigField("boolean", "DEVELOPMENT", (defaultConfig.versionCode!! < 100).toString())
-		}
-	}
+            // Set package names used in various XML files
+            resValue("string", "app_id", namespace + applicationIdSuffix)
+            resValue("string", "app_search_suggest_authority", "${namespace + applicationIdSuffix}.content")
+            resValue("string", "app_search_suggest_intent_data", "content://${namespace + applicationIdSuffix}.content/intent")
 
-	lint {
-		lintConfig = file("$rootDir/android-lint.xml")
-		abortOnError = false
-		sarifReport = true
-		checkDependencies = true
-	}
+            // Set flavored application name
+            resValue("string", "app_name", "@string/app_name_debug")
 
-	testOptions.unitTests.all {
-		it.useJUnitPlatform()
-	}
+            buildConfigField("boolean", "DEVELOPMENT", (defaultConfig.versionCode!! < 100).toString())
+
+            signingConfig = signingConfigs.getByName("release")
+        }
+    }
+
+
+
+    lint {
+        lintConfig = file("$rootDir/android-lint.xml")
+        abortOnError = false
+        sarifReport = true
+        checkDependencies = true
+    }
+
+    testOptions.unitTests.all {
+        it.useJUnitPlatform()
+    }
 }
 
 aboutLibraries {
-	// Remove the "generated" timestamp to allow for reproducible builds
-	excludeFields = arrayOf("generated")
+    // Remove the "generated" timestamp to allow for reproducible builds
+    excludeFields = arrayOf("generated")
 }
 
 val versionTxt by tasks.registering {
-	val path = layout.buildDirectory.asFile.get().resolve("version.txt")
+    val path = layout.buildDirectory.asFile.get().resolve("version.txt")
 
-	doLast {
-		val versionString = "v${android.defaultConfig.versionName}=${android.defaultConfig.versionCode}"
-		logger.info("Writing [$versionString] to $path")
-		path.writeText("$versionString\n")
-	}
+    doLast {
+        val versionString = "v${android.defaultConfig.versionName}=${android.defaultConfig.versionCode}"
+        logger.info("Writing [$versionString] to $path")
+        path.writeText("$versionString\n")
+    }
 }
 
 dependencies {
-	// Jellyfin
-	implementation(projects.playback.core)
-	implementation(projects.playback.exoplayer)
-	implementation(projects.playback.jellyfin)
-	implementation(projects.playback.ui)
-	implementation(projects.preference)
-	implementation(libs.jellyfin.apiclient)
-	implementation(libs.jellyfin.sdk) {
-		// Change version if desired
-		val sdkVersion = findProperty("sdk.version")?.toString()
-		when (sdkVersion) {
-			"local" -> version { strictly("latest-SNAPSHOT") }
-			"snapshot" -> version { strictly("master-SNAPSHOT") }
-			"unstable-snapshot" -> version { strictly("openapi-unstable-SNAPSHOT") }
-		}
-	}
+    // Jellyfin
+    implementation(projects.playback.core)
+    implementation(projects.playback.exoplayer)
+    implementation(projects.playback.jellyfin)
+    implementation(projects.playback.ui)
+    implementation(projects.preference)
+    implementation(libs.jellyfin.apiclient)
+    implementation(libs.jellyfin.sdk) {
+        // Change version if desired
+        val sdkVersion = findProperty("sdk.version")?.toString()
+        when (sdkVersion) {
+            "local" -> version { strictly("latest-SNAPSHOT") }
+            "snapshot" -> version { strictly("master-SNAPSHOT") }
+            "unstable-snapshot" -> version { strictly("openapi-unstable-SNAPSHOT") }
+        }
+    }
 
-	// Kotlin
-	implementation(libs.kotlinx.coroutines)
-	implementation(libs.kotlinx.serialization.json)
+    // Kotlin
+    implementation(libs.kotlinx.coroutines)
+    implementation(libs.kotlinx.serialization.json)
 
-	// Android(x)
-	implementation(libs.androidx.core)
-	implementation(libs.androidx.activity)
-	implementation(libs.androidx.fragment)
-	implementation(libs.androidx.leanback.core)
-	implementation(libs.androidx.leanback.preference)
-	implementation(libs.androidx.preference)
-	implementation(libs.androidx.appcompat)
-	implementation(libs.androidx.tvprovider)
-	implementation(libs.androidx.constraintlayout)
-	implementation(libs.androidx.recyclerview)
-	implementation(libs.androidx.work.runtime)
-	implementation(libs.bundles.androidx.lifecycle)
-	implementation(libs.androidx.window)
-	implementation(libs.androidx.cardview)
-	implementation(libs.androidx.startup)
-	implementation(libs.bundles.androidx.compose)
+    // Android(x)
+    implementation(libs.androidx.core)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.fragment)
+    implementation(libs.androidx.leanback.core)
+    implementation(libs.androidx.leanback.preference)
+    implementation(libs.androidx.preference)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.tvprovider)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.work.runtime)
+    implementation(libs.bundles.androidx.lifecycle)
+    implementation(libs.androidx.window)
+    implementation(libs.androidx.cardview)
+    implementation(libs.androidx.startup)
+    implementation(libs.bundles.androidx.compose)
 
-	// Dependency Injection
-	implementation(libs.bundles.koin)
+    // Dependency Injection
+    implementation(libs.bundles.koin)
 
-	// Media players
-	implementation(libs.androidx.media3.exoplayer)
-	implementation(libs.androidx.media3.exoplayer.hls)
-	implementation(libs.androidx.media3.ui)
-	implementation(libs.jellyfin.androidx.media3.ffmpeg.decoder)
-	implementation(libs.libvlc)
+    // Media players
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.exoplayer.hls)
+    implementation(libs.androidx.media3.ui)
+    implementation(libs.jellyfin.androidx.media3.ffmpeg.decoder)
+    implementation(libs.libvlc)
 
-	// Markdown
-	implementation(libs.bundles.markwon)
+    // Markdown
+    implementation(libs.bundles.markwon)
 
-	// Image utility
-	implementation(libs.blurhash)
-	implementation(libs.bundles.coil)
+    // Image utility
+    implementation(libs.blurhash)
+    implementation(libs.bundles.coil)
 
-	// Crash Reporting
-	implementation(libs.bundles.acra)
+    // Crash Reporting
+    implementation(libs.bundles.acra)
 
-	// Licenses
-	implementation(libs.aboutlibraries)
+    // Licenses
+    implementation(libs.aboutlibraries)
 
-	// Logging
-	implementation(libs.timber)
-	implementation(libs.slf4j.timber)
+    // Logging
+    implementation(libs.timber)
+    implementation(libs.slf4j.timber)
 
-	// Debugging
-	if (getProperty("leakcanary.enable")?.toBoolean() == true)
-		debugImplementation(libs.leakcanary)
+    // Debugging
+    if (getProperty("leakcanary.enable")?.toBoolean() == true)
+        debugImplementation(libs.leakcanary)
 
-	// Compatibility (desugaring)
-	coreLibraryDesugaring(libs.android.desugar)
+    // Compatibility (desugaring)
+    coreLibraryDesugaring(libs.android.desugar)
 
-	// Testing
-	testImplementation(libs.kotest.runner.junit5)
-	testImplementation(libs.kotest.assertions)
-	testImplementation(libs.mockk)
+    // Testing
+    testImplementation(libs.kotest.runner.junit5)
+    testImplementation(libs.kotest.assertions)
+    testImplementation(libs.mockk)
 }
