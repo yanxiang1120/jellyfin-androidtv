@@ -105,7 +105,7 @@ public class GetPlaybackInfoResponse extends Response<PlaybackInfoResponse> {
         streamInfo.setPlaySessionId(playbackInfo.getPlaySessionId());
         streamInfo.setStartPositionTicks(startPositionTicks);
 
-        if (options.getEnableDirectPlay() && mediaSourceInfo.getSupportsDirectPlay()){
+        if (options.getEnableDirectPlay() /*&& mediaSourceInfo.getSupportsDirectPlay()*/){
             if (canDirectPlay(mediaSourceInfo)) {
                 streamInfo.setPlayMethod(PlayMethod.DirectPlay);
                 streamInfo.setContainer(mediaSourceInfo.getContainer());
@@ -140,7 +140,7 @@ public class GetPlaybackInfoResponse extends Response<PlaybackInfoResponse> {
 
                 streamInfo.setMediaUrl(mediaUrl);
             }
-        } else if (options.getEnableDirectStream() && mediaSourceInfo.getSupportsDirectStream()){
+        } else if (options.getEnableDirectStream() /*&& mediaSourceInfo.getSupportsDirectStream()*/){
             String outputContainer = mediaSourceInfo.getContainer();
             if (outputContainer == null){
                 outputContainer = "";
