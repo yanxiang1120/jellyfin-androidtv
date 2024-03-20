@@ -758,14 +758,15 @@ public class PlaybackController implements PlaybackControllerNotifiable {
 
         // if burning in, set the subtitle index and the burningSubs flag so that onPrepared and switchSubtitleStream will know that we already have subtitles enabled
         burningSubs = false;
-        if (mCurrentStreamInfo.getPlayMethod() == PlayMethod.Transcode && getSubtitleStreamInfo(mDefaultSubIndex) != null &&
-                getSubtitleStreamInfo(mDefaultSubIndex).getDeliveryMethod() == SubtitleDeliveryMethod.Encode) {
-            mCurrentOptions.setSubtitleStreamIndex(mDefaultSubIndex);
-            Timber.d("stream started with burnt in subs");
-            burningSubs = true;
-        } else {
-            mCurrentOptions.setSubtitleStreamIndex(null);
-        }
+//        if (mCurrentStreamInfo.getPlayMethod() == PlayMethod.Transcode && getSubtitleStreamInfo(mDefaultSubIndex) != null &&
+//                getSubtitleStreamInfo(mDefaultSubIndex).getDeliveryMethod() == SubtitleDeliveryMethod.Encode) {
+//            mCurrentOptions.setSubtitleStreamIndex(mDefaultSubIndex);
+//            Timber.d("stream started with burnt in subs");
+//            burningSubs = true;
+//        } else {
+//            mCurrentOptions.setSubtitleStreamIndex(null);
+//        }
+        mCurrentOptions.setSubtitleStreamIndex(null);
 
         Long mbPos = position * 10000;
 

@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
 
 import androidx.annotation.NonNull;
@@ -697,7 +698,7 @@ public class FullDetailsFragment extends Fragment implements RecordingIndicatorV
                         ItemFields.DisplayPreferencesId,
                         ItemFields.ChildCount
                 });
-                ItemRowAdapter seasonsAdapter = new ItemRowAdapter(requireContext(), seasons, new CardPresenter(), adapter);
+                ItemRowAdapter seasonsAdapter = new ItemRowAdapter(requireContext(), seasons, new CardPresenter().setImageScaleType(ImageView.ScaleType.FIT_CENTER), adapter);
                 addItemRow(adapter, seasonsAdapter, 1, getString(R.string.lbl_seasons));
 
                 //Specials

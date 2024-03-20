@@ -56,6 +56,11 @@ public class LegacyImageCardView extends BaseCardView {
         setForeground(null);
     }
 
+    public LegacyImageCardView setImageScaleType(ImageView.ScaleType scaleType) {
+        binding.mainImage.setScaleType(scaleType);
+        return this;
+    }
+
     public void setBanner(int bannerResource) {
         if (mBanner == null) {
             mBanner = new ImageView(getContext());

@@ -47,6 +47,8 @@ public class CardPresenter extends Presenter {
 
     private boolean isUniformAspect = false;
 
+    private ImageView.ScaleType scaleType;
+
     public CardPresenter() {
         super();
     }
@@ -64,6 +66,11 @@ public class CardPresenter extends Presenter {
     public CardPresenter(boolean showInfo, int staticHeight) {
         this(showInfo);
         mStaticHeight = staticHeight;
+    }
+
+    public CardPresenter setImageScaleType(ImageView.ScaleType scaleType) {
+        this.scaleType = scaleType;
+        return this;
     }
 
     class ViewHolder extends Presenter.ViewHolder {
@@ -347,6 +354,10 @@ public class CardPresenter extends Presenter {
         LegacyImageCardView cardView = new LegacyImageCardView(parent.getContext(), mShowInfo);
         cardView.setFocusable(true);
         cardView.setFocusableInTouchMode(true);
+
+        if (scaleType != null) {
+            cardView.setImageScaleType(scaleType);
+        }
 
         TypedValue typedValue = new TypedValue();
         Resources.Theme theme = parent.getContext().getTheme();
