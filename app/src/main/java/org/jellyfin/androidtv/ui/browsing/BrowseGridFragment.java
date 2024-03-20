@@ -2,7 +2,6 @@ package org.jellyfin.androidtv.ui.browsing;
 
 import static org.koin.java.KoinJavaComponent.inject;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
@@ -19,6 +18,7 @@ import android.widget.PopupWindow;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.leanback.widget.BaseGridView;
 import androidx.leanback.widget.OnItemViewClickedListener;
 import androidx.leanback.widget.OnItemViewSelectedListener;
@@ -85,7 +85,7 @@ public class BrowseGridFragment extends Fragment implements View.OnKeyListener {
     private final static int CHUNK_SIZE_MINIMUM = 25;
 
     private String mainTitle;
-    private Activity mActivity;
+    private FragmentActivity mActivity;
     private BaseRowItem mCurrentItem;
     private CompositeClickedListener mClickedListener = new CompositeClickedListener();
     private CompositeSelectedListener mSelectedListener = new CompositeSelectedListener();
@@ -277,7 +277,7 @@ public class BrowseGridFragment extends Fragment implements View.OnKeyListener {
     public void setItem(BaseRowItem item) {
         if (item != null) {
             binding.title.setText(item.getFullName(requireContext()));
-            InfoLayoutHelper.addInfoRow(requireContext(), item, binding.infoRow, true, true);
+            InfoLayoutHelper.addInfoRow(requireContext(), item.getBaseItem(), binding.infoRow, true);
         } else {
             binding.title.setText("");
             binding.infoRow.removeAllViews();
@@ -580,7 +580,7 @@ public class BrowseGridFragment extends Fragment implements View.OnKeyListener {
                         albumArtists.setFields(new ItemFields[]{
                                 ItemFields.PrimaryImageAspectRatio,
                                 ItemFields.ItemCounts,
-                                ItemFields.ChildCount
+                                ItemFields.ChildCount,
                         });
                         albumArtists.setParentId(mParentId.toString());
                         setRowDef(new BrowseRowDef("", albumArtists, CHUNK_SIZE_MINIMUM, new ChangeTriggerType[]{}));
@@ -763,7 +763,7 @@ public class BrowseGridFragment extends Fragment implements View.OnKeyListener {
         libraryPreferences.set(LibraryPreferences.Companion.getFilterUnwatchedOnly(), mAdapter.getFilters().isUnwatchedOnly());
         libraryPreferences.set(LibraryPreferences.Companion.getSortBy(), mAdapter.getSortBy());
         libraryPreferences.set(LibraryPreferences.Companion.getSortOrder(), getSortOption(mAdapter.getSortBy()).order);
-        CoroutineUtils.runBlocking((coroutineScope, continuation) -> libraryPreferences.commit(continuation));
+        CoroutineUtils.runOnLifecycle(getLifecycle(), (coroutineScope, continuation) -> libraryPreferences.commit(continuation));
     }
 
     private void addTools() {

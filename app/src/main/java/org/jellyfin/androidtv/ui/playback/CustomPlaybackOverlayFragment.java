@@ -16,7 +16,6 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
@@ -71,7 +70,6 @@ import org.jellyfin.androidtv.ui.presentation.MutableObjectAdapter;
 import org.jellyfin.androidtv.ui.presentation.PositionableListRowPresenter;
 import org.jellyfin.androidtv.ui.shared.PaddedLineBackgroundSpan;
 import org.jellyfin.androidtv.util.CoroutineUtils;
-import org.jellyfin.androidtv.util.DeviceUtils;
 import org.jellyfin.androidtv.util.ImageUtils;
 import org.jellyfin.androidtv.util.InfoLayoutHelper;
 import org.jellyfin.androidtv.util.TextUtilsKt;
@@ -203,7 +201,7 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
             }
         };
 
-        backgroundService.getValue().clearBackgrounds();
+        backgroundService.getValue().disable();
     }
 
     @Nullable
@@ -776,13 +774,6 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
             Timber.d("this fragment belongs to the current session, ending it");
             playbackControllerContainer.getValue().getPlaybackController().endPlayback();
         }
-
-        // Reset display mode back to "no preference"
-        if (DeviceUtils.is60()) {
-            WindowManager.LayoutParams params = requireActivity().getWindow().getAttributes();
-            params.preferredDisplayModeId = 0;
-            requireActivity().getWindow().setAttributes(params);
-        }
     }
 
     public void show() {
@@ -1130,7 +1121,7 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
         tvGuideBinding.guideTitle.setText(mSelectedProgram.getName());
         tvGuideBinding.summary.setText(mSelectedProgram.getOverview());
         //info row
-        InfoLayoutHelper.addInfoRow(requireContext(), ModelCompat.asSdk(mSelectedProgram), tvGuideBinding.guideInfoRow, false, false);
+        InfoLayoutHelper.addInfoRow(requireContext(), ModelCompat.asSdk(mSelectedProgram), tvGuideBinding.guideInfoRow, false);
         if (mSelectedProgram.getId() != null) {
             tvGuideBinding.displayDate.setText(TimeUtils.getFriendlyDate(requireContext(), TimeUtils.convertToLocalDate(mSelectedProgram.getStartDate())));
         }

@@ -26,7 +26,6 @@ import org.jellyfin.androidtv.preference.constant.NextUpBehavior;
 import org.jellyfin.androidtv.preference.constant.PreferredVideoPlayer;
 import org.jellyfin.androidtv.preference.constant.RefreshRateSwitchingBehavior;
 import org.jellyfin.androidtv.ui.livetv.TvManager;
-import org.jellyfin.androidtv.util.DeviceUtils;
 import org.jellyfin.androidtv.util.TimeUtils;
 import org.jellyfin.androidtv.util.Utils;
 import org.jellyfin.androidtv.util.apiclient.ReportingHelper;
@@ -129,11 +128,10 @@ public class PlaybackController implements PlaybackControllerNotifiable {
         mFragment = fragment;
         mHandler = new Handler();
 
-        if (DeviceUtils.is60()) {
-            refreshRateSwitchingBehavior = userPreferences.getValue().get(UserPreferences.Companion.getRefreshRateSwitchingBehavior());
-            if (refreshRateSwitchingBehavior != RefreshRateSwitchingBehavior.DISABLED)
-                getDisplayModes();
-        }
+
+        refreshRateSwitchingBehavior = userPreferences.getValue().get(UserPreferences.Companion.getRefreshRateSwitchingBehavior());
+        if (refreshRateSwitchingBehavior != RefreshRateSwitchingBehavior.DISABLED)
+            getDisplayModes();
 
         // Set default value for useVlc field
         // when set to auto the default will be exoplayer
@@ -320,7 +318,8 @@ public class PlaybackController implements PlaybackControllerNotifiable {
 
     @TargetApi(23)
     private Display.Mode findBestDisplayMode(MediaStream videoStream) {
-        if (mFragment == null || mDisplayModes == null || videoStream.getRealFrameRate() == null) return null;
+        if (mFragment == null || mDisplayModes == null || videoStream.getRealFrameRate() == null)
+            return null;
 
 
         int curWeight = 0;
@@ -388,7 +387,7 @@ public class PlaybackController implements PlaybackControllerNotifiable {
                     best.getModeId(), best.getPhysicalWidth(), best.getPhysicalHeight(), best.getRefreshRate());
             if (current.getModeId() != best.getModeId()) {
                 Timber.i("*** Attempting to change refresh rate from: %s - %dx%d@%f", current.getModeId(), current.getPhysicalWidth(),
-                                                                                                current.getPhysicalHeight(),current.getRefreshRate());
+                        current.getPhysicalHeight(), current.getRefreshRate());
                 WindowManager.LayoutParams params = mFragment.requireActivity().getWindow().getAttributes();
                 params.preferredDisplayModeId = best.getModeId();
                 mFragment.requireActivity().getWindow().setAttributes(params);
@@ -535,7 +534,7 @@ public class PlaybackController implements PlaybackControllerNotifiable {
                 // undo setting mSeekPosition for liveTV
                 if (isLiveTv) mSeekPosition = -1;
 
-                int maxBitrate = Utils.getMaxBitrate();
+                int maxBitrate = Utils.getMaxBitrate(userPreferences.getValue());
                 Timber.d("Max bitrate is: %d", maxBitrate);
                 VideoOptions vlcOptions = buildVLCOptions(forcedSubtitleIndex, item, maxBitrate);
                 VideoOptions internalOptions = buildExoPlayerOptions(forcedSubtitleIndex, item, maxBitrate);
@@ -671,24 +670,6 @@ public class PlaybackController implements PlaybackControllerNotifiable {
                             } else if (preferredVideoPlayer == PreferredVideoPlayer.EXOPLAYER) {
                                 // Make sure to not use VLC
                                 useVlc = false;
-                            } else if (preferredVideoPlayer == PreferredVideoPlayer.AUTO) {
-                                // TODO: Clean up this logic
-                                // Now look at both responses and choose the one that direct plays or bitstreams - favor VLC
-                                useVlc = !vlcErrorEncountered &&
-                                        !vlcResponse.getPlayMethod().equals(PlayMethod.Transcode) &&
-                                        (DeviceUtils.is60() ||
-                                                !userPreferences.getValue().get(UserPreferences.Companion.getAc3Enabled()) ||
-                                                vlcResponse.getMediaSource() == null ||
-                                                JavaCompat.getDefaultAudioStream(vlcResponse.getMediaSource()) == null ||
-                                                (!"ac3".equals(JavaCompat.getDefaultAudioStream(vlcResponse.getMediaSource()).getCodec()) &&
-                                                        !"truehd".equals(JavaCompat.getDefaultAudioStream(vlcResponse.getMediaSource()).getCodec()))) &&
-                                        (Utils.downMixAudio(mFragment.getContext()) ||
-                                                !DeviceUtils.is60() ||
-                                                internalResponse.getPlayMethod().equals(PlayMethod.Transcode) ||
-                                                !userPreferences.getValue().get(UserPreferences.Companion.getDtsEnabled()) ||
-                                                internalResponse.getMediaSource() == null ||
-                                                JavaCompat.getDefaultAudioStream(internalResponse.getMediaSource()) == null ||
-                                                (JavaCompat.getVideoStream(vlcResponse.getMediaSource()) != null && JavaCompat.getVideoStream(vlcResponse.getMediaSource()).getWidth() < 1000));
                             } else if (preferredVideoPlayer == PreferredVideoPlayer.CHOOSE) {
                                 PreferredVideoPlayer preferredVideoPlayerByPlayWith = systemPreferences.getValue().get(SystemPreferences.Companion.getChosenPlayer());
 
@@ -812,16 +793,7 @@ public class PlaybackController implements PlaybackControllerNotifiable {
 
         if (mFragment != null) mFragment.updateDisplay();
 
-        // when using VLC if source is stereo or we're on the Fire platform with AC3 - use most compatible output
-        if (mVideoManager != null && !mVideoManager.isNativeMode() &&
-                ((isLiveTv && DeviceUtils.isFireTv()) ||
-                        (response.getMediaSource() != null &&
-                                JavaCompat.getDefaultAudioStream(response.getMediaSource()) != null &&
-                                JavaCompat.getDefaultAudioStream(response.getMediaSource()).getChannels() != null &&
-                                (JavaCompat.getDefaultAudioStream(response.getMediaSource()).getChannels() <= 2 ||
-                                        (DeviceUtils.isFireTv() &&
-                                                ("ac3".equals(JavaCompat.getDefaultAudioStream(response.getMediaSource()).getCodec()) ||
-                                                        "truehd".equals(JavaCompat.getDefaultAudioStream(response.getMediaSource()).getCodec()))))))) {
+        if (mVideoManager != null && !mVideoManager.isNativeMode()) {
             mVideoManager.setCompatibleAudio();
             Timber.i("Setting compatible audio mode...");
         } else if (mVideoManager != null) {
@@ -875,7 +847,7 @@ public class PlaybackController implements PlaybackControllerNotifiable {
             currIndex = getCurrentMediaSource().getDefaultAudioStreamIndex();
         } else if (hasInitializedVideoManager() && !isTranscoding()) {
             currIndex = isNativeMode() ? mVideoManager.getExoPlayerTrack(org.jellyfin.sdk.model.api.MediaStreamType.AUDIO, getCurrentlyPlayingItem().getMediaStreams()) :
-                                            mVideoManager.getVLCAudioTrack(getCurrentlyPlayingItem().getMediaStreams());
+                    mVideoManager.getVLCAudioTrack(getCurrentlyPlayingItem().getMediaStreams());
         }
         return currIndex;
     }
@@ -1133,7 +1105,7 @@ public class PlaybackController implements PlaybackControllerNotifiable {
         resetPlayerErrors();
     }
 
-    public void endPlayback(){
+    public void endPlayback() {
         endPlayback(false);
     }
 
